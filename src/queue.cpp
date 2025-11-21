@@ -1,25 +1,18 @@
 #include "../includes/queue.h"
 #include <iostream>
-#include <memory> 
+#include <memory>  
 
 struct Person {
     std::string name;
     int age;
     
-    Person(const std::string& n = "", int a = 0) : name(n), age(a) {}
-    
-    friend std::ostream& operator<<(std::ostream& os, const Person& p) {
-        return os << p.name << " (" << p.age << ")";
-    }
+    Person(std::string n = "", int a = 0) : name(n), age(a) {}
 };
 
 struct TestStruct {
-    int a;
-    double b;
-    TestStruct(int a, double b) : a(a), b(b) {}
-    bool operator==(const TestStruct& other) const {
-        return a == other.a && b == other.b;
-    }
+    int x;
+    double y;
+    TestStruct(int a, double b) : x(a), y(b) {}
 };
 
 template<typename T>
@@ -29,28 +22,26 @@ template<typename T>
 Queue<T>::Iterator::Iterator(Node* node) : current(node) {}
 
 template<typename T>
-typename Queue<T>::Iterator::reference Queue<T>::Iterator::operator*() const {
+T& Queue<T>::Iterator::operator*() const {
     return current->data;
 }
 
 template<typename T>
-typename Queue<T>::Iterator::pointer Queue<T>::Iterator::operator->() const {
+T* Queue<T>::Iterator::operator->() const {
     return &current->data;
 }
 
 template<typename T>
 typename Queue<T>::Iterator& Queue<T>::Iterator::operator++() {
-    if (current) {
-        current = current->next;
-    }
+    if (current) current = current->next;
     return *this;
 }
 
 template<typename T>
 typename Queue<T>::Iterator Queue<T>::Iterator::operator++(int) {
-    Iterator tmp = *this;
+    Iterator temp = *this;
     ++(*this);
-    return tmp;
+    return temp;
 }
 
 template<typename T>
@@ -78,26 +69,26 @@ void Queue<T>::push(const T& value) {
     Node* new_node = alloc.allocate(1);
     alloc.construct(new_node, value, nullptr);
     
-    if (!head) {
+    if (!tail) {
         head = tail = new_node;
     } else {
         tail->next = new_node;
         tail = new_node;
     }
-    ++count;
+    count++;
 }
 
 template<typename T>
 void Queue<T>::pop() {
     if (!head) return;
     
-    Node* temp = head;
+    Node* old_head = head;
     head = head->next;
     
-    std::allocator_traits<decltype(alloc)>::destroy(alloc, temp);
-    alloc.deallocate(temp, 1);
+    std::allocator_traits<decltype(alloc)>::destroy(alloc, old_head);
+    alloc.deallocate(old_head, 1);
     
-    --count;
+    count--;
     if (!head) tail = nullptr;
 }
 
@@ -133,5 +124,5 @@ typename Queue<T>::iterator Queue<T>::end() {
 
 template class Queue<int>;
 template class Queue<Person>;
-template class Queue<std::string>;
 template class Queue<TestStruct>;
+template class Queue<std::string>;
